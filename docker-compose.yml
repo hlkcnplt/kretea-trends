@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/kreteatrends
+      - SPRING_DATASOURCE_USERNAME=kretea
+      - SPRING_DATASOURCE_PASSWORD=kreteapass
+      - KRETEA_AUTH_SECRET=${KRETEA_AUTH_SECRET:-default_secret_dev}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - kretea_network
+
+  worker:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    environment:
+      - API_URL=http://api:8080/v1/trends/ingest
+      - KRETEA_AUTH_SECRET=${KRETEA_AUTH_SECRET:-default_secret_dev}
+    depends_on:
+      - api
+    networks:
+      - kretea_network
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=kreteatrends
+      - POSTGRES_USER=kretea
+      - POSTGRES_PASSWORD=kreteapass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kretea -d kreteatrends"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - kretea_network
+
+volumes:
+  pgdata:
+
+networks:
+  kretea_network:
+    driver: bridge

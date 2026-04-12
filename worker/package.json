@@ -1,0 +1,18 @@
+{
+  "name": "kretea-trends-worker",
+  "version": "1.0.0",
+  "description": "Scraping worker for KRETEA-TRENDS",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.8",
+    "dotenv": "^16.4.5",
+    "puppeteer": "^22.6.0"
+  }
+}
