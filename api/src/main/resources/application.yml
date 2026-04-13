@@ -23,6 +23,9 @@ spring:
 kretea:
   auth:
     secret: ${KRETEA_AUTH_SECRET:default_secret_dev}
+  rate-limit:
+    capacity: ${RATE_LIMIT_CAPACITY:100}
+    minutes: ${RATE_LIMIT_MINUTES:1}
 
 cors:
   allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:3000}
