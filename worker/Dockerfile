@@ -25,12 +25,9 @@ RUN apt-get update \
 
 WORKDIR /app
 
-# COPY package.json package-lock.json* ./
-# RUN npm install
+COPY package.json package-lock.json* ./
+RUN npm install
 
-# COPY . .
+COPY . .
 
-# CMD ["npm", "start"]
-
-# Placeholder entrypoint until project is fully bootstrapped
-CMD ["tail", "-f", "/dev/null"]
+CMD ["npm", "start"]
