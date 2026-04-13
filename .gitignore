@@ -22,6 +22,8 @@ worker/.pnpm-debug.log*
 
 # ====== Java Spring Boot API ======
 api/target/
+api/src/main/resources/application-local.yml
+api/src/main/resources/application-secret.yml
 api/classes/
 api/*.jar
 api/*.war
