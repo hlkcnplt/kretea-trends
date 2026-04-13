@@ -4,10 +4,16 @@ import { scrapeBehance } from './scrapers/behance.js';
 import { sendTrendToApi } from './services/api.js';
 import config from './config/index.js';
 
+import { initIntelligence, extractColors, generateDesignTags } from './services/intelligence.js';
+
 async function processSource(scraperFunction) {
   try {
     const trends = await scraperFunction();
     for (const trend of trends) {
+      if (trend.imageUrl) {
+        trend.primaryColors = await extractColors(trend.imageUrl);
+        trend.styleTags = await generateDesignTags(trend.imageUrl);
+      }
       await sendTrendToApi(trend);
     }
   } catch (error) {
@@ -25,7 +31,7 @@ async function runAllScrapers() {
 
 async function main() {
   console.log('KRETEA-TRENDS Worker initialized.');
-  
+  await initIntelligence();
   await runAllScrapers();
 
   console.log(`Scheduling next run in ${config.scheduleIntervalMs}ms...`);
