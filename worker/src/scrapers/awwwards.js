@@ -22,7 +22,7 @@ export async function scrapeAwwwards() {
             parent = parent.parentElement;
         }
         if (parent && parent.tagName === 'A') url = parent.href;
-        else url = url + '?id=' + Math.random().toString(36).substring(7);
+        else return null;
         
         return {
           title: img.alt || 'Awwwards Design',
@@ -32,7 +32,7 @@ export async function scrapeAwwwards() {
       });
     });
 
-    for (const item of items) {
+    for (const item of items.filter(Boolean)) {
       if (item.url && item.image) {
         trends.push({
           sourceUrl: item.url,

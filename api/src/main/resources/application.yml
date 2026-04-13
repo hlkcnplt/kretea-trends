@@ -3,6 +3,10 @@ spring:
     name: kretea-trends-api
   profiles:
     active: local
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=300s
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://db.zmczdrsntfufzukcydaf.supabase.co:5432/postgres}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
@@ -23,6 +27,3 @@ kretea:
 cors:
   allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:3000}
 
-openai:
-  api:
-    key: ${OPENAI_API_KEY:}

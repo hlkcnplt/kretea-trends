@@ -10,9 +10,19 @@ export async function initIntelligence() {
   }
 }
 
+function detectMimeType(url) {
+  const lower = url.split('?')[0].toLowerCase();
+  if (lower.endsWith('.png')) return 'image/png';
+  if (lower.endsWith('.webp')) return 'image/webp';
+  if (lower.endsWith('.gif')) return 'image/gif';
+  return 'image/jpeg';
+}
+
 async function fetchImageBase64(url) {
   const response = await axios.get(url, { responseType: 'arraybuffer', timeout: 8000 });
-  return Buffer.from(response.data, 'binary').toString('base64');
+  const contentType = response.headers['content-type'] || detectMimeType(url);
+  const mimeType = contentType.split(';')[0].trim();
+  return { base64: Buffer.from(response.data, 'binary').toString('base64'), mimeType };
 }
 
 export async function extractColors(imageUrl) {
@@ -30,28 +40,23 @@ export async function extractColors(imageUrl) {
 
 export async function generateDesignTags(imageUrl) {
   if (!genAI) {
-    return ["AI_OFFLINE"];
+    return ['AI_OFFLINE'];
   }
-  
+
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
-    const base64Image = await fetchImageBase64(imageUrl);
-    
-    const imageParts = [{
-      inlineData: {
-        data: base64Image,
-        mimeType: "image/jpeg"
-      }
-    }];
-    
-    const prompt = "Output strictly a raw JSON array of exactly 3 popular UI/UX web design style tags identifying the aesthetics in this image. No markdown, no introduction.";
-    
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
+    const { base64, mimeType } = await fetchImageBase64(imageUrl);
+
+    const imageParts = [{ inlineData: { data: base64, mimeType } }];
+
+    const prompt = 'Output strictly a raw JSON array of exactly 3 popular UI/UX web design style tags identifying the aesthetics in this image. No markdown, no introduction.';
+
     const result = await model.generateContent([prompt, ...imageParts]);
     const response = await result.response;
     const text = response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-    
+
     return JSON.parse(text);
   } catch (error) {
-    return ["Uncategorized"];
+    return ['Uncategorized'];
   }
 }

@@ -22,14 +22,14 @@ export async function scrapeMobbin() {
             parent = parent.parentElement;
         }
         if (parent && parent.tagName === 'A') url = parent.href;
-        else url = url + '/screens/' + Math.random().toString(36).substring(7);
+        else return null;
         
         return {
           url: url,
           image: img.src
         };
       });
-    });
+    }).then(items => items.filter(Boolean));
 
     for (const item of items) {
       if (item.url && item.image) {

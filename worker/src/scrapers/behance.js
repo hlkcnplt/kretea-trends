@@ -24,22 +24,24 @@ export async function scrapeBehance() {
             parent = parent.parentElement;
         }
         if (parent && parent.tagName === 'A') url = parent.href;
-        else url = url + Math.random().toString(36).substring(7);
+        else return null;
         
         return {
           url: url,
           image: img.src
         };
       });
-    });
+    }).then(items => items.filter(Boolean));
 
     for (const item of items) {
-      trends.push({
-        sourceUrl: item.url,
-        imageUrl: item.image,
-        styleTags: [],
-        primaryColors: []
-      });
+      if (item.url && item.image) {
+        trends.push({
+          sourceUrl: item.url,
+          imageUrl: item.image,
+          styleTags: [],
+          primaryColors: []
+        });
+      }
     }
   } catch (err) {
     console.error('Error testing Behance scraping:', err.message);
