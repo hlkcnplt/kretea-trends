@@ -1,13 +1,15 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import Vibrant from 'node-vibrant';
 import axios from 'axios';
 
-let genAI = null;
+import config from '../config/index.js';
+
+let aiModelUrl = config.aiModelUrl;
+let aiModelName = config.aiModelName;
 
 export async function initIntelligence() {
-  if (process.env.GEMINI_API_KEY) {
-    genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  }
+  aiModelUrl = config.aiModelUrl;
+  aiModelName = config.aiModelName;
+  console.log(`[AI] Initialized with model: ${aiModelName} at ${aiModelUrl}`);
 }
 
 function detectMimeType(url) {
@@ -19,10 +21,16 @@ function detectMimeType(url) {
 }
 
 async function fetchImageBase64(url) {
-  const response = await axios.get(url, { responseType: 'arraybuffer', timeout: 8000 });
+  const response = await axios.get(url, {
+    responseType: 'arraybuffer',
+    timeout: 8000
+  });
   const contentType = response.headers['content-type'] || detectMimeType(url);
   const mimeType = contentType.split(';')[0].trim();
-  return { base64: Buffer.from(response.data, 'binary').toString('base64'), mimeType };
+  return {
+    base64: Buffer.from(response.data, 'binary').toString('base64'),
+    mimeType
+  };
 }
 
 export async function extractColors(imageUrl) {
@@ -39,24 +47,56 @@ export async function extractColors(imageUrl) {
 }
 
 export async function generateDesignTags(imageUrl) {
-  if (!genAI) {
-    return ['AI_OFFLINE'];
-  }
-
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
     const { base64, mimeType } = await fetchImageBase64(imageUrl);
-
-    const imageParts = [{ inlineData: { data: base64, mimeType } }];
-
     const prompt = 'Output strictly a raw JSON array of exactly 3 popular UI/UX web design style tags identifying the aesthetics in this image. No markdown, no introduction.';
 
-    const result = await model.generateContent([prompt, ...imageParts]);
-    const response = await result.response;
-    const text = response.text().replace(/```json/g, '').replace(/```/g, '').trim();
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    
+    if (config.aiApiKey && config.aiApiKey !== 'no-key') {
+      headers['Authorization'] = `Bearer ${config.aiApiKey}`;
+    }
 
+    const response = await axios.post(`${aiModelUrl}/v1/chat/completions`, {
+      model: aiModelName,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: prompt },
+            {
+              type: 'image_url',
+              image_url: {
+                url: `data:${mimeType};base64,${base64}`
+              }
+            }
+          ]
+        }
+      ],
+      temperature: 0.7
+    }, {
+      timeout: 30000,
+      headers: headers
+    });
+
+    let text = response.data.choices[0].message.content;
+    // Robustly extract JSON array if model adds extra text
+    const jsonMatch = text.match(/\[.*\]/s);
+    if (jsonMatch) {
+      text = jsonMatch[0];
+    } else {
+      text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    }
+    
     return JSON.parse(text);
   } catch (error) {
+    if (error.response) {
+      console.error(`Local AI error [${error.response.status}]:`, error.response.data);
+    } else {
+      console.error('Local AI error:', error.message);
+    }
     return ['Uncategorized'];
   }
 }

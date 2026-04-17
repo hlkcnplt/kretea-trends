@@ -1,10 +1,13 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
 
 const config = {
-  apiUrl: process.env.API_URL || 'http://localhost:8080/v1/trends/ingest',
-  kreteaAuthSecret: process.env.KRETEA_AUTH_SECRET || 'my_local_testing_secret',
-  scheduleIntervalMs: parseInt(process.env.SCHEDULE_INTERVAL_MS) || 24 * 60 * 60 * 1000
+  apiUrl: process.env.API_URL,
+  kreteaAuthSecret: process.env.KRETEA_AUTH_SECRET,
+  scheduleIntervalMs: parseInt(process.env.SCHEDULE_INTERVAL_MS),
+  aiModelUrl: process.env.AI_MODEL_URL,
+  aiModelName: process.env.AI_MODEL_NAME,
+  aiApiKey: process.env.AI_API_KEY,
 };
 
 export default config;
