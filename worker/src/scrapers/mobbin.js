@@ -4,7 +4,7 @@ export async function scrapeMobbin() {
   console.log('Starting Mobbin Scraper...');
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    headless: "new"
+    headless: true
   });
   const page = await browser.newPage();
   const trends = [];
@@ -42,7 +42,7 @@ export async function scrapeMobbin() {
       }
     }
   } catch (err) {
-    console.error('Error testing Mobbin scraping:', err.message);
+    console.error('Mobbin scraper error:', err.message);
   } finally {
     await browser.close();
   }

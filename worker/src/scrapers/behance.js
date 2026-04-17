@@ -4,7 +4,7 @@ export async function scrapeBehance() {
   console.log('Starting Behance Scraper...');
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    headless: "new"
+    headless: true
   });
   const page = await browser.newPage();
   
@@ -44,7 +44,7 @@ export async function scrapeBehance() {
       }
     }
   } catch (err) {
-    console.error('Error testing Behance scraping:', err.message);
+    console.error('Behance scraper error:', err.message);
   } finally {
     await browser.close();
   }

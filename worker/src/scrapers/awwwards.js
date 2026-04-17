@@ -4,7 +4,7 @@ export async function scrapeAwwwards() {
   console.log('Starting Awwwards Scraper...');
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    headless: "new"
+    headless: true
   });
   const page = await browser.newPage();
   const trends = [];
@@ -44,7 +44,7 @@ export async function scrapeAwwwards() {
     }
     
   } catch (err) {
-    console.error('Error testing Awwwards scraping:', err.message);
+    console.error('Awwwards scraper error:', err.message);
   } finally {
     await browser.close();
   }
