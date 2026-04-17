@@ -42,7 +42,7 @@ public class TrendController {
     }
 
     @GetMapping
-    @Cacheable(value = "trends")
+    @Cacheable(value = "trends", key = "'page:' + #page + ':size:' + #size")
     public ResponseEntity<Page<Trend>> getTrends(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
@@ -52,6 +52,7 @@ public class TrendController {
     }
 
     @GetMapping("/search")
+    @Cacheable(value = "trends", key = "'search:' + #tag + ':page:' + #page + ':size:' + #size")
     public ResponseEntity<Page<Trend>> searchTrendsByTag(
             @RequestParam String tag,
             @RequestParam(defaultValue = "0") int page,
