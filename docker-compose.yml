@@ -12,7 +12,6 @@ services:
       - SPRING_DATASOURCE_USERNAME=kretea
       - SPRING_DATASOURCE_PASSWORD=kreteapass
       - KRETEA_AUTH_SECRET=${KRETEA_AUTH_SECRET:-default_secret_dev}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
     depends_on:
       postgres:
         condition: service_healthy
@@ -26,6 +25,10 @@ services:
     environment:
       - API_URL=http://api:8080/v1/trends/ingest
       - KRETEA_AUTH_SECRET=${KRETEA_AUTH_SECRET:-default_secret_dev}
+      - SCHEDULE_INTERVAL_MS=${SCHEDULE_INTERVAL_MS:-86400000}
+      - AI_MODEL_URL=${AI_MODEL_URL:-http://host.docker.internal:1234}
+      - AI_MODEL_NAME=${AI_MODEL_NAME:-}
+      - AI_API_KEY=${AI_API_KEY:-no-key}
     depends_on:
       - api
     networks:
