@@ -1,36 +1,46 @@
-import { scrapeAwwwards } from './scrapers/awwwards.js';
-import { scrapeMobbin } from './scrapers/mobbin.js';
-import { scrapeBehance } from './scrapers/behance.js';
-import { sendTrendToApi } from './services/api.js';
-import config from './config/index.js';
+import { scrapeAwwwards } from "./scrapers/awwwards.js";
+import { scrapeMobbin } from "./scrapers/mobbin.js";
+import { scrapeBehance } from "./scrapers/behance.js";
+import { sendTrendToApi } from "./services/api.js";
+import config from "./config/index.js";
 
-import { initIntelligence, extractColors, generateDesignTags } from './services/intelligence.js';
+import {
+  initIntelligence,
+  extractColors,
+  generateDesignTags,
+} from "./services/intelligence.js";
 
 async function processSource(scraperFunction) {
   try {
     const trends = await scraperFunction();
-    for (const trend of trends) {
+    for (let i = 0; i < trends.length; i++) {
+      const trend = trends[i];
+      console.log(`[${i + 1}/${trends.length}] Processing: ${trend.sourceUrl}`);
       if (trend.imageUrl) {
+        process.stdout.write(
+          `  - Extracting colors and AI tags (this may take a while)... `,
+        );
         trend.primaryColors = await extractColors(trend.imageUrl);
         trend.styleTags = await generateDesignTags(trend.imageUrl);
+        console.log(`Done!`);
       }
       await sendTrendToApi(trend);
     }
   } catch (error) {
-    console.error('Error processing source:', error);
+    console.error("Error processing source:", error);
   }
 }
 
 async function runAllScrapers() {
   console.log(`[${new Date().toISOString()}] Starting daily scraper job...`);
   await processSource(scrapeAwwwards);
-  await processSource(scrapeMobbin);
-  await processSource(scrapeBehance);
+  // await processSource(scrapeMobbin);
+  // await processSource(scrapeBehance);
   console.log(`[${new Date().toISOString()}] Scraper job completed.`);
 }
 
 async function main() {
-  console.log('KRETEA-TRENDS Worker initialized.');
+  console.log("KRETEA-TRENDS Worker initialized.");
   await initIntelligence();
   await runAllScrapers();
 
@@ -40,7 +50,7 @@ async function main() {
   }, config.scheduleIntervalMs);
 }
 
-main().catch(err => {
-  console.error('Fatal error during startup:', err);
+main().catch((err) => {
+  console.error("Fatal error during startup:", err);
   process.exit(1);
 });

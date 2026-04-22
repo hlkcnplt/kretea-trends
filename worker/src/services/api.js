@@ -10,6 +10,11 @@ const apiClient = axios.create({
 });
 
 export async function sendTrendToApi(trendData) {
+  if (config.dryRun) {
+    console.log('[DRY RUN] Skipping API call. Data to be sent:', JSON.stringify(trendData, null, 2));
+    return;
+  }
+
   try {
     const response = await apiClient.post('', trendData);
     console.log(`Successfully sent trend to API: ${trendData.sourceUrl}`);

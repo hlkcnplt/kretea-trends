@@ -8,6 +8,7 @@ const config = {
   aiModelUrl: process.env.AI_MODEL_URL,
   aiModelName: process.env.AI_MODEL_NAME,
   aiApiKey: process.env.AI_API_KEY,
+  dryRun: process.env.DRY_RUN,
 };
 
 export default config;

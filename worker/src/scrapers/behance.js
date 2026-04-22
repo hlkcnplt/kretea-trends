@@ -12,32 +12,31 @@ export async function scrapeBehance() {
   const trends = [];
   
   try {
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
     await page.goto('https://www.behance.net/search/projects?tracking_source=typeahead_search_direct&search=ui%20ux', { waitUntil: 'networkidle2' });
     
-    await page.waitForSelector('img', { timeout: 10000 }).catch(() => {});
+    // Scroll and wait
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await new Promise(r => setTimeout(r, 4000));
     
-    const items = await page.$$eval('img', nodes => {
-      return nodes.filter(n => n.src && n.width > 100).slice(0, 5).map(img => {
-        let parent = img.parentElement;
-        let url = 'https://www.behance.net/gallery/';
-        while (parent && parent.tagName !== 'A' && parent.tagName !== 'BODY') {
-            parent = parent.parentElement;
-        }
-        if (parent && parent.tagName === 'A') url = parent.href;
-        else return null;
-        
-        return {
-          url: url,
-          image: img.src
-        };
-      });
-    }).then(items => items.filter(Boolean));
+    const items = await page.evaluate(() => {
+       const nodes = Array.from(document.querySelectorAll('img[src*="behance.net/project"]')).slice(0, 15);
+       return nodes.map(img => {
+         const a = img.closest('a');
+         return {
+           url: a ? a.href : window.location.href,
+           image: img.src,
+           title: img.alt || 'Behance Project'
+         };
+       });
+    });
 
     for (const item of items) {
       if (item.url && item.image) {
         trends.push({
           sourceUrl: item.url,
           imageUrl: item.image,
+          title: item.title,
           styleTags: [],
           primaryColors: []
         });

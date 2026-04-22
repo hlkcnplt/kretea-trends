@@ -10,33 +10,42 @@ export async function scrapeAwwwards() {
   const trends = [];
   
   try {
-    await page.goto('https://www.awwwards.com/websites/', { waitUntil: 'networkidle2' });
-    
-    await page.waitForSelector('img', { timeout: 10000 });
-    
-    const items = await page.$$eval('img', nodes => {
-      return nodes.filter(n => n.src && n.width > 50).slice(0, 5).map(img => {
-        let parent = img.parentElement;
-        let url = 'https://www.awwwards.com/websites/';
-        while (parent && parent.tagName !== 'A' && parent.tagName !== 'BODY') {
-            parent = parent.parentElement;
-        }
-        if (parent && parent.tagName === 'A') url = parent.href;
-        else return null;
-        
-        return {
-          title: img.alt || 'Awwwards Design',
-          url: url,
-          image: img.src
-        };
-      });
-    });
+     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+     await page.goto('https://www.awwwards.com/websites/', { waitUntil: 'networkidle2' });
+     
+     // Wait for the card container to be present and scroll slightly to trigger lazy loading
+     await page.waitForSelector('.card-site', { timeout: 15000 });
+     await page.evaluate(() => window.scrollBy(0, 800));
+     await new Promise(r => setTimeout(r, 2000));
+
+     const items = await page.$$eval('.card-site.js-container-figure', nodes => {
+       return nodes.slice(0, 5).map(node => {
+         const img = node.querySelector('img');
+         const links = Array.from(node.querySelectorAll('a'));
+         const externalLink = links.find(a => a.href && !a.href.includes('awwwards.com'));
+         const linkUrl = externalLink ? externalLink.href : (links[0] ? links[0].href : null);
+         
+         if (!img || !linkUrl) return null;
+         
+         let imageUrl = img.getAttribute('data-srcset') || img.getAttribute('srcset') || img.src;
+         if (imageUrl && imageUrl.includes('1x')) {
+           imageUrl = imageUrl.split('1x')[0].trim();
+         }
+         
+         return {
+           title: img.alt || 'Awwwards Design',
+           url: linkUrl,
+           image: imageUrl
+         };
+       });
+     }).then(items => items.filter(Boolean));
 
     for (const item of items.filter(Boolean)) {
       if (item.url && item.image) {
         trends.push({
           sourceUrl: item.url,
           imageUrl: item.image,
+          title: item.title,
           styleTags: [],
           primaryColors: []
         });
