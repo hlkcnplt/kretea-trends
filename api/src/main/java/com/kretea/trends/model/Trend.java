@@ -29,6 +29,9 @@ public class Trend {
     @Column(nullable = false, length = 1000)
     private String imageUrl;
 
+    @Column(length = 500)
+    private String title;
+
     @ElementCollection
     @CollectionTable(name = "trend_style_tags", joinColumns = @JoinColumn(name = "trend_id"))
     @Column(name = "style_tag")

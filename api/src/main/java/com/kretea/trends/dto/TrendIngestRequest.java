@@ -8,6 +8,7 @@ import java.util.List;
 public class TrendIngestRequest {
     private String sourceUrl;
     private String imageUrl;
+    private String title;
     private List<String> styleTags;
     private List<String> primaryColors;
 }

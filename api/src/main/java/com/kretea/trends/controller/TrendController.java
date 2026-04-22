@@ -33,6 +33,7 @@ public class TrendController {
         Trend trend = Trend.builder()
                 .sourceUrl(request.getSourceUrl())
                 .imageUrl(request.getImageUrl())
+                .title(request.getTitle())
                 .styleTags(request.getStyleTags())
                 .primaryColors(request.getPrimaryColors())
                 .build();
