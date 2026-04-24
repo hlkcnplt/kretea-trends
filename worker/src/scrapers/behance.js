@@ -14,21 +14,39 @@ export async function scrapeBehance() {
   try {
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
     await page.goto('https://www.behance.net/search/projects?tracking_source=typeahead_search_direct&search=ui%20ux', { waitUntil: 'networkidle2' });
-    
-    // Scroll and wait
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await new Promise(r => setTimeout(r, 4000));
-    
+
+    await page.evaluate(() => window.scrollBy(0, window.innerHeight));
+    await new Promise(r => setTimeout(r, 3000));
+
     const items = await page.evaluate(() => {
-       const nodes = Array.from(document.querySelectorAll('img[src*="behance.net/project"]')).slice(0, 15);
-       return nodes.map(img => {
-         const a = img.closest('a');
-         return {
-           url: a ? a.href : window.location.href,
-           image: img.src,
-           title: img.alt || 'Behance Project'
-         };
-       });
+      const covers = Array.from(document.querySelectorAll('.js-project-cover'));
+      const uniqueItems = [];
+      const urls = new Set();
+
+      for (const cover of covers) {
+        const img = cover.querySelector('img');
+        if (!img || !img.src.includes('mir-s3')) continue;
+        if (img.width < 100 || img.height < 100) continue;
+
+        const links = cover.querySelectorAll('a');
+        let projectUrl = null;
+        for (const link of links) {
+          if (link.href.includes('/gallery/')) {
+            projectUrl = link.href.split('?')[0];
+            break;
+          }
+        }
+
+        if (projectUrl && !urls.has(projectUrl)) {
+          urls.add(projectUrl);
+          uniqueItems.push({
+            url: projectUrl,
+            image: img.src,
+            title: img.alt || 'Behance Project'
+          });
+        }
+      }
+      return uniqueItems.slice(0, 5);
     });
 
     for (const item of items) {

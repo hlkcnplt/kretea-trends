@@ -1,5 +1,5 @@
 import { scrapeAwwwards } from "./scrapers/awwwards.js";
-import { scrapeMobbin } from "./scrapers/mobbin.js";
+import { scrapeDribbble } from "./scrapers/dribbble.js";
 import { scrapeBehance } from "./scrapers/behance.js";
 import { sendTrendToApi } from "./services/api.js";
 import config from "./config/index.js";
@@ -34,8 +34,8 @@ async function processSource(scraperFunction) {
 async function runAllScrapers() {
   console.log(`[${new Date().toISOString()}] Starting daily scraper job...`);
   await processSource(scrapeAwwwards);
-  // await processSource(scrapeMobbin);
-  // await processSource(scrapeBehance);
+  await processSource(scrapeDribbble);
+  await processSource(scrapeBehance);
   console.log(`[${new Date().toISOString()}] Scraper job completed.`);
 }
 
