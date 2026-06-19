@@ -33,12 +33,24 @@ public class Trend {
     private String title;
 
     @ElementCollection
-    @CollectionTable(name = "trend_style_tags", joinColumns = @JoinColumn(name = "trend_id"))
+    @CollectionTable(
+        name = "trend_style_tags",
+        joinColumns = @JoinColumn(name = "trend_id"),
+        indexes = {
+            @Index(name = "idx_trend_style_tags_trend_id", columnList = "trend_id")
+        }
+    )
     @Column(name = "style_tag")
     private List<String> styleTags;
 
     @ElementCollection
-    @CollectionTable(name = "trend_primary_colors", joinColumns = @JoinColumn(name = "trend_id"))
+    @CollectionTable(
+        name = "trend_primary_colors",
+        joinColumns = @JoinColumn(name = "trend_id"),
+        indexes = {
+            @Index(name = "idx_trend_primary_colors_trend_id", columnList = "trend_id")
+        }
+    )
     @Column(name = "primary_color")
     private List<String> primaryColors;
 
